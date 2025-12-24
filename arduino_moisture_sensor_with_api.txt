@@ -1,0 +1,210 @@
+// ===== Blynk Setup =====
+#define BLYNK_TEMPLATE_ID "TMPL68MuVD408"
+#define BLYNK_TEMPLATE_NAME "project"
+#define BLYNK_AUTH_TOKEN "SxvdnhbD6EHc0OCuA_5yEeOR75YA8IUh"
+#define BLYNK_PRINT Serial
+
+#include <WiFi.h>
+#include <WiFiClient.h>
+#include <BlynkSimpleEsp32.h>
+#include <WebServer.h>
+
+// ===== WiFi =====
+char ssid[] = "yoswaris";
+char pass[] = "33333333";
+
+// ===== Pin Setup =====
+#define SOIL_PIN   32      // ขา Analog
+#define RELAY_PIN  27      // ขารีเลย์ (Active LOW)
+
+// ===== Threshold =====
+#define MOTOR_ON_ADC 1500  // ค่าที่จะเปิดปั๊ม (ดินแห้ง)
+
+// ===== Variables =====
+int soilValue = 0;
+bool autoMode = false;
+bool pumpState = false;
+
+BlynkTimer timer;
+WebServer server(80);
+
+// =================================================
+// CORS Headers - ส่ง headers สำหรับ cross-origin requests
+// =================================================
+void sendCORS() {
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.sendHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  server.sendHeader("Access-Control-Allow-Headers", "Content-Type");
+}
+
+// =================================================
+// API: GET /api/sensor
+// Response: { "value": 1234, "pumpState": true, "autoMode": false }
+// =================================================
+void handleSensorAPI() {
+  String json = "{";
+  json += "\"value\":" + String(soilValue) + ",";
+  json += "\"pumpState\":" + String(pumpState ? "true" : "false") + ",";
+  json += "\"autoMode\":" + String(autoMode ? "true" : "false");
+  json += "}";
+  
+  sendCORS();
+  server.send(200, "application/json", json);
+}
+
+// =================================================
+// API: POST /api/pump
+// Body: { "state": true }
+// Response: { "success": true, "pumpState": true }
+// =================================================
+void handlePumpAPI() {
+  if (!autoMode) {
+    String body = server.arg("plain");
+    if (body.indexOf("\"state\":true") >= 0 || body.indexOf("\"state\": true") >= 0) {
+      pumpState = true;
+      digitalWrite(RELAY_PIN, LOW);
+      Blynk.virtualWrite(V1, 1);
+    } else {
+      pumpState = false;
+      digitalWrite(RELAY_PIN, HIGH);
+      Blynk.virtualWrite(V1, 0);
+    }
+  }
+  
+  sendCORS();
+  String json = "{\"success\":true,\"pumpState\":" + String(pumpState ? "true" : "false") + "}";
+  server.send(200, "application/json", json);
+}
+
+// =================================================
+// API: POST /api/auto
+// Body: { "state": true }
+// Response: { "success": true, "autoMode": true, "pumpState": false }
+// =================================================
+void handleAutoAPI() {
+  String body = server.arg("plain");
+  if (body.indexOf("\"state\":true") >= 0 || body.indexOf("\"state\": true") >= 0) {
+    autoMode = true;
+    Blynk.virtualWrite(V2, 1);
+  } else {
+    autoMode = false;
+    digitalWrite(RELAY_PIN, HIGH);
+    pumpState = false;
+    Blynk.virtualWrite(V1, 0);
+    Blynk.virtualWrite(V2, 0);
+  }
+  
+  sendCORS();
+  String json = "{\"success\":true,\"autoMode\":" + String(autoMode ? "true" : "false");
+  json += ",\"pumpState\":" + String(pumpState ? "true" : "false") + "}";
+  server.send(200, "application/json", json);
+}
+
+// =================================================
+// CORS Preflight Handler
+// =================================================
+void handleCORS() {
+  sendCORS();
+  server.send(204);
+}
+
+// =================================================
+// อ่านค่าความชื้นดิน
+// =================================================
+void readSoil() {
+  int rawADC = analogRead(SOIL_PIN);
+  
+  // Swap ค่า ADC (0=แห้ง, 4095=ชื้น)
+  soilValue = map(rawADC, 0, 4095, 4095, 0);
+  soilValue = constrain(soilValue, 0, 4095);
+  
+  // ส่งค่าไป Blynk Gauge (V0)
+  Blynk.virtualWrite(V0, soilValue);
+  
+  // ===== AUTO MODE =====
+  if (autoMode) {
+    if (soilValue <= MOTOR_ON_ADC) {
+      // ดินแห้ง - เปิดปั๊ม
+      digitalWrite(RELAY_PIN, LOW);
+      pumpState = true;
+      Blynk.virtualWrite(V1, 1);
+      Blynk.virtualWrite(V3, 1);
+      Blynk.virtualWrite(V4, 0);
+    } else {
+      // ดินชื้น - ปิดปั๊ม
+      digitalWrite(RELAY_PIN, HIGH);
+      pumpState = false;
+      Blynk.virtualWrite(V1, 0);
+      Blynk.virtualWrite(V3, 0);
+      Blynk.virtualWrite(V4, 1);
+    }
+  }
+}
+
+// =================================================
+// Blynk: ปุ่ม Manual Pump (V1)
+// =================================================
+BLYNK_WRITE(V1) {
+  if (!autoMode) {
+    pumpState = param.asInt();
+    digitalWrite(RELAY_PIN, pumpState ? LOW : HIGH);
+  }
+}
+
+// =================================================
+// Blynk: ปุ่ม Auto Mode (V2)
+// =================================================
+BLYNK_WRITE(V2) {
+  autoMode = param.asInt();
+  if (!autoMode) {
+    digitalWrite(RELAY_PIN, HIGH);
+    pumpState = false;
+    Blynk.virtualWrite(V1, 0);
+  }
+}
+
+// =================================================
+// Setup
+// =================================================
+void setup() {
+  Serial.begin(9600);
+  
+  pinMode(RELAY_PIN, OUTPUT);
+  digitalWrite(RELAY_PIN, HIGH); // ปิดปั๊มเริ่มต้น
+  
+  // ตั้งค่า ADC สำหรับ ESP32
+  analogSetPinAttenuation(SOIL_PIN, ADC_11db);
+  
+  // เชื่อมต่อ WiFi และ Blynk
+  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
+  
+  // ===== ตั้งค่า API Routes =====
+  server.on("/api/sensor", HTTP_GET, handleSensorAPI);
+  server.on("/api/sensor", HTTP_OPTIONS, handleCORS);
+  server.on("/api/pump", HTTP_POST, handlePumpAPI);
+  server.on("/api/pump", HTTP_OPTIONS, handleCORS);
+  server.on("/api/auto", HTTP_POST, handleAutoAPI);
+  server.on("/api/auto", HTTP_OPTIONS, handleCORS);
+  server.begin();
+  
+  // แสดงข้อมูล Server
+  Serial.println("");
+  Serial.println("========================================");
+  Serial.println("Server started!");
+  Serial.print("API URL: http://");
+  Serial.print(WiFi.localIP());
+  Serial.println("/api/sensor");
+  Serial.println("========================================");
+  
+  // อ่านค่าทุก 100ms
+  timer.setInterval(100L, readSoil);
+}
+
+// =================================================
+// Loop
+// =================================================
+void loop() {
+  Blynk.run();
+  timer.run();
+  server.handleClient();
+}

@@ -1,0 +1,96 @@
+.container {
+  width: 100%;
+  height: 300px;
+  position: relative;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  gap: 12px;
+}
+
+.empty span:first-child {
+  font-size: 3rem;
+  opacity: 0.5;
+}
+
+.chartWrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.svg {
+  width: 100%;
+  height: 100%;
+}
+
+.gridLine {
+  stroke: rgba(255, 255, 255, 0.05);
+  stroke-width: 1;
+}
+
+.thresholdLine {
+  stroke: #ff4757;
+  stroke-width: 2;
+  stroke-dasharray: 8 4;
+  opacity: 0.6;
+}
+
+.thresholdLabel {
+  fill: #ff4757;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.areaGradient {
+  opacity: 0.3;
+}
+
+.line {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 8px var(--primary-glow));
+}
+
+.dot {
+  fill: var(--primary);
+  filter: drop-shadow(0 0 6px var(--primary));
+}
+
+.tooltip {
+  position: absolute;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 0.75rem;
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: var(--shadow-md);
+}
+
+.tooltip strong {
+  color: var(--primary);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.tooltip span {
+  color: var(--text-muted);
+  display: block;
+  margin-top: 2px;
+}
+
+.axisLabel {
+  fill: var(--text-muted);
+  font-size: 3px;
+  font-family: 'JetBrains Mono', monospace;
+}
