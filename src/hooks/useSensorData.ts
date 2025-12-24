@@ -65,7 +65,6 @@ export function useSensorData() {
     const s = settingsRef.current;
     const pump = pumpStateRef.current;
     const auto = autoModeRef.current;
-    const range = s.demoMax - s.demoMin;
 
     // ถ้าปั๊มทำงาน ค่าความชื้นจะเพิ่มขึ้น แต่ช้าลงเมื่อใกล้ค่าสูงสุด
     if (pump) {
