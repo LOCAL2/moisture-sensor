@@ -63,26 +63,10 @@ export function useSensorData() {
   // Demo mode: generate mock data
   const generateMockData = useCallback(() => {
     const s = settingsRef.current;
-    const pump = pumpStateRef.current;
     const auto = autoModeRef.current;
 
-    // ถ้าปั๊มทำงาน ค่าความชื้นจะเพิ่มขึ้น แต่ช้าลงเมื่อใกล้ค่าสูงสุด
-    if (pump) {
-      const distanceToMax = s.demoMax - mockValueRef.current;
-      const increase = Math.floor(Math.random() * Math.min(150, distanceToMax * 0.3)) + 20;
-      mockValueRef.current += increase;
-    } else {
-      // ค่าลดลงแบบธรรมชาติ
-      const distanceToMin = mockValueRef.current - s.demoMin;
-      const decrease = Math.floor(Math.random() * Math.min(80, distanceToMin * 0.2)) + 10;
-      mockValueRef.current -= decrease;
-    }
-
-    // เพิ่มความผันผวนเล็กน้อย
-    mockValueRef.current += Math.floor(Math.random() * 40) - 20;
-
-    // Clamp ค่าให้อยู่ในช่วง
-    mockValueRef.current = Math.max(s.demoMin, Math.min(s.demoMax, mockValueRef.current));
+    // สุ่มค่าแบบมั่วในช่วง min-max
+    mockValueRef.current = s.demoMin + Math.floor(Math.random() * (s.demoMax - s.demoMin));
 
     const newEntry: SensorData = {
       value: mockValueRef.current,
