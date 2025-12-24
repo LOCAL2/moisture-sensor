@@ -36,6 +36,12 @@ export function useSensorData() {
   // Keep refs in sync
   useEffect(() => {
     settingsRef.current = settings;
+    // Reset mock value if out of range
+    if (settings.demoMode) {
+      if (mockValueRef.current < settings.demoMin || mockValueRef.current > settings.demoMax) {
+        mockValueRef.current = Math.floor((settings.demoMin + settings.demoMax) / 2);
+      }
+    }
   }, [settings]);
 
   useEffect(() => {
