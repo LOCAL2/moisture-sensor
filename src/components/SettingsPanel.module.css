@@ -46,7 +46,7 @@
 }
 
 .header h2 {
-  font-size: 1.25rem;
+  font-size: calc(1.25rem * var(--font-scale));
   font-weight: 600;
 }
 
@@ -59,7 +59,7 @@
   background: transparent;
   border: none;
   color: var(--text-muted);
-  font-size: 1.25rem;
+  font-size: calc(1.25rem * var(--font-scale));
   cursor: pointer;
   border-radius: var(--radius-sm);
   transition: all 0.2s ease;
@@ -85,7 +85,7 @@
 }
 
 .section h3 {
-  font-size: 0.875rem;
+  font-size: calc(0.875rem * var(--font-scale));
   font-weight: 600;
   color: var(--text-secondary);
   margin-bottom: 16px;
@@ -103,7 +103,7 @@
 
 .field label {
   display: block;
-  font-size: 0.875rem;
+  font-size: calc(0.875rem * var(--font-scale));
   font-weight: 500;
   color: var(--text-primary);
   margin-bottom: 8px;
@@ -117,7 +117,7 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   color: var(--text-primary);
-  font-size: 0.9375rem;
+  font-size: calc(0.9375rem * var(--font-scale));
   font-family: 'JetBrains Mono', monospace;
   transition: all 0.2s ease;
 }
@@ -140,7 +140,7 @@
 
 .hint {
   display: block;
-  font-size: 0.75rem;
+  font-size: calc(0.75rem * var(--font-scale));
   color: var(--text-muted);
   margin-top: 6px;
 }
@@ -182,7 +182,7 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.875rem;
+  font-size: calc(0.875rem * var(--font-scale));
   text-align: center;
   color: var(--primary);
 }
@@ -199,7 +199,7 @@
   flex: 1;
   padding: 12px 24px;
   border-radius: var(--radius-md);
-  font-size: 0.9375rem;
+  font-size: calc(0.9375rem * var(--font-scale));
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;

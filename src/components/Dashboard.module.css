@@ -64,7 +64,7 @@
   color: white;
   border-radius: 50%;
   font-weight: 700;
-  font-size: 14px;
+  font-size: calc(14px * var(--font-scale));
 }
 
 @keyframes slideIn {
@@ -91,7 +91,7 @@
 }
 
 .chartHeader h2 {
-  font-size: 1.25rem;
+  font-size: calc(1.25rem * var(--font-scale));
   font-weight: 600;
   color: var(--text-primary);
 }
@@ -102,7 +102,7 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   color: var(--text-secondary);
-  font-size: 0.875rem;
+  font-size: calc(0.875rem * var(--font-scale));
   cursor: pointer;
   transition: all 0.2s ease;
 }

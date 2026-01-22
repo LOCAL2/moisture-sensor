@@ -29,7 +29,7 @@
 }
 
 .icon {
-  font-size: 1.5rem;
+  font-size: calc(1.5rem * var(--font-scale));
 }
 
 .content {
@@ -39,7 +39,7 @@
 
 .title {
   display: block;
-  font-size: 0.875rem;
+  font-size: calc(0.875rem * var(--font-scale));
   color: var(--text-muted);
   margin-bottom: 4px;
 }
@@ -51,20 +51,20 @@
 }
 
 .value {
-  font-size: 1.5rem;
+  font-size: calc(1.5rem * var(--font-scale));
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.2;
 }
 
 .unit {
-  font-size: 0.875rem;
+  font-size: calc(0.875rem * var(--font-scale));
   color: var(--text-muted);
   font-family: 'JetBrains Mono', monospace;
 }
 
 .trend {
-  font-size: 1rem;
+  font-size: calc(1rem * var(--font-scale));
   font-weight: 600;
   margin-left: 4px;
 }

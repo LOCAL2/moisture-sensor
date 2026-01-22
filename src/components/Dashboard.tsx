@@ -8,6 +8,7 @@ import { SettingsPanel } from './SettingsPanel';
 import { Header } from './Header';
 import { DropletIcon, PlantIcon, BoltIcon } from './Icons';
 import styles from './Dashboard.module.css';
+import { useEffect } from 'react';
 
 export function Dashboard() {
   const {
@@ -24,6 +25,11 @@ export function Dashboard() {
   } = useSensorData();
 
   const [showSettings, setShowSettings] = useState(false);
+
+  // Apply font size to root element
+  useEffect(() => {
+    document.documentElement.style.setProperty('--font-scale', settings.fontSize.toString());
+  }, [settings.fontSize]);
 
   const getMoistureStatus = (value: number) => {
     const pct = Math.round((value / 4095) * 100);

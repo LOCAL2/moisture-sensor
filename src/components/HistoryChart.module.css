@@ -15,7 +15,7 @@
 }
 
 .empty span:first-child {
-  font-size: 3rem;
+  font-size: calc(3rem * var(--font-scale));
   opacity: 0.5;
 }
 
@@ -44,7 +44,7 @@
 
 .thresholdLabel {
   fill: #ff4757;
-  font-size: 11px;
+  font-size: calc(11px * var(--font-scale));
   font-family: 'JetBrains Mono', monospace;
 }
 
@@ -72,7 +72,7 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   padding: 8px 12px;
-  font-size: 0.75rem;
+  font-size: calc(0.75rem * var(--font-scale));
   pointer-events: none;
   z-index: 10;
   box-shadow: var(--shadow-md);
@@ -91,6 +91,6 @@
 
 .axisLabel {
   fill: var(--text-muted);
-  font-size: 3px;
+  font-size: calc(3px * var(--font-scale));
   font-family: 'JetBrains Mono', monospace;
 }

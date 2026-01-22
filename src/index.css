@@ -37,6 +37,9 @@
   --radius-lg: 20px;
   --radius-xl: 28px;
   
+  /* Font Scale - can be adjusted dynamically */
+  --font-scale: 1;
+  
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   line-height: 1.6;
   font-weight: 400;

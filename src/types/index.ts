@@ -11,6 +11,7 @@ export interface Settings {
   demoMode: boolean;
   demoMin: number;
   demoMax: number;
+  fontSize: number;
 }
 
 export interface HistoryEntry {

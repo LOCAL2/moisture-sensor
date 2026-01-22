@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Settings } from '../types';
 import { SettingsIcon } from './Icons';
 import styles from './SettingsPanel.module.css';
@@ -16,6 +16,21 @@ export function SettingsPanel({ settings, onUpdate, onClose }: SettingsPanelProp
     onUpdate(localSettings);
     onClose();
   };
+
+  const handleFontSizeChange = (newSize: number) => {
+    const updated = { ...localSettings, fontSize: newSize };
+    setLocalSettings(updated);
+    // Apply immediately for realtime preview
+    document.documentElement.style.setProperty('--font-scale', newSize.toString());
+  };
+
+  // Reset font size if user cancels
+  useEffect(() => {
+    return () => {
+      // On unmount, restore the original settings font size
+      document.documentElement.style.setProperty('--font-scale', settings.fontSize.toString());
+    };
+  }, [settings.fontSize]);
 
   const intervalOptions = [
     { value: 500, label: '0.5 วินาที' },
@@ -107,6 +122,22 @@ export function SettingsPanel({ settings, onUpdate, onClose }: SettingsPanelProp
 
           <div className={styles.section}>
             <h3>ตั้งค่าทั่วไป</h3>
+
+            <div className={styles.field}>
+              <label>ขนาดตัวอักษร</label>
+              <div className={styles.rangeWrapper}>
+                <input
+                  type="range"
+                  min="0.8"
+                  max="2.5"
+                  step="0.1"
+                  value={localSettings.fontSize}
+                  onChange={e => handleFontSizeChange(Number(e.target.value))}
+                />
+                <span className={styles.rangeValue}>{localSettings.fontSize.toFixed(1)}x</span>
+              </div>
+              <span className={styles.hint}>ปรับขนาดตัวอักษรทั้งหมดในแอป</span>
+            </div>
 
             <div className={styles.field}>
               <label>ความถี่อัพเดท</label>

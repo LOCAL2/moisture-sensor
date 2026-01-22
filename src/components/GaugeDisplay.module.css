@@ -37,7 +37,7 @@
 }
 
 .percentage {
-  font-size: 3.5rem;
+  font-size: calc(3.5rem * var(--font-scale));
   font-weight: 800;
   letter-spacing: -2px;
   line-height: 1;
@@ -45,13 +45,13 @@
 }
 
 .value {
-  font-size: 1rem;
+  font-size: calc(1rem * var(--font-scale));
   color: var(--text-secondary);
   font-family: 'JetBrains Mono', monospace;
 }
 
 .value span {
-  font-size: 0.75rem;
+  font-size: calc(0.75rem * var(--font-scale));
   color: var(--text-muted);
 }
 
@@ -59,7 +59,7 @@
   margin-top: 8px;
   padding: 6px 16px;
   border-radius: 20px;
-  font-size: 0.875rem;
+  font-size: calc(0.875rem * var(--font-scale));
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;

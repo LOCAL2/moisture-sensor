@@ -9,6 +9,7 @@ const DEFAULT_SETTINGS: Settings = {
   demoMode: false,
   demoMin: 100,
   demoMax: 4000,
+  fontSize: 1.3,
 };
 
 const STORAGE_KEY = 'moisture_sensor_settings_v4';
