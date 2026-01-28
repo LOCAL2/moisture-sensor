@@ -18,7 +18,8 @@ char pass[] = "33333333";
 #define RELAY_PIN  27      // ขารีเลย์ (Active LOW)
 
 // ===== Threshold =====
-#define MOTOR_ON_ADC 1500  // ค่าที่จะเปิดปั๊ม (ดินแห้ง)
+int motorOnADC = 1500;  // ค่าที่จะเปิดปั๊ม (ดินแห้ง) - เปลี่ยนจาก #define เป็น variable
+int motorOffADC = 1500; // ค่าที่ถือว่าดินชื้นเพียงพอ
 
 // ===== Variables =====
 int soilValue = 0;
@@ -39,13 +40,15 @@ void sendCORS() {
 
 // =================================================
 // API: GET /api/sensor
-// Response: { "value": 1234, "pumpState": true, "autoMode": false }
+// Response: { "value": 1234, "pumpState": true, "autoMode": false, "thresholdDry": 1500, "thresholdWet": 1500 }
 // =================================================
 void handleSensorAPI() {
   String json = "{";
   json += "\"value\":" + String(soilValue) + ",";
   json += "\"pumpState\":" + String(pumpState ? "true" : "false") + ",";
-  json += "\"autoMode\":" + String(autoMode ? "true" : "false");
+  json += "\"autoMode\":" + String(autoMode ? "true" : "false") + ",";
+  json += "\"thresholdDry\":" + String(motorOnADC) + ",";
+  json += "\"thresholdWet\":" + String(motorOffADC);
   json += "}";
   
   sendCORS();
@@ -101,6 +104,48 @@ void handleAutoAPI() {
 }
 
 // =================================================
+// API: POST /api/thresholds
+// Body: { "thresholdDry": 1500, "thresholdWet": 1500 }
+// Response: { "success": true, "thresholdDry": 1500, "thresholdWet": 1500 }
+// =================================================
+void handleThresholdsAPI() {
+  String body = server.arg("plain");
+  
+  // Parse JSON manually (simple parsing)
+  int dryStart = body.indexOf("\"thresholdDry\":");
+  int wetStart = body.indexOf("\"thresholdWet\":");
+  
+  if (dryStart >= 0) {
+    dryStart += 15; // length of "thresholdDry":
+    int dryEnd = body.indexOf(",", dryStart);
+    if (dryEnd < 0) dryEnd = body.indexOf("}", dryStart);
+    if (dryEnd > dryStart) {
+      String dryStr = body.substring(dryStart, dryEnd);
+      dryStr.trim();
+      motorOnADC = dryStr.toInt();
+      motorOnADC = constrain(motorOnADC, 0, 4095);
+    }
+  }
+  
+  if (wetStart >= 0) {
+    wetStart += 15; // length of "thresholdWet":
+    int wetEnd = body.indexOf(",", wetStart);
+    if (wetEnd < 0) wetEnd = body.indexOf("}", wetStart);
+    if (wetEnd > wetStart) {
+      String wetStr = body.substring(wetStart, wetEnd);
+      wetStr.trim();
+      motorOffADC = wetStr.toInt();
+      motorOffADC = constrain(motorOffADC, 0, 4095);
+    }
+  }
+  
+  sendCORS();
+  String json = "{\"success\":true,\"thresholdDry\":" + String(motorOnADC);
+  json += ",\"thresholdWet\":" + String(motorOffADC) + "}";
+  server.send(200, "application/json", json);
+}
+
+// =================================================
 // CORS Preflight Handler
 // =================================================
 void handleCORS() {
@@ -123,7 +168,7 @@ void readSoil() {
   
   // ===== AUTO MODE =====
   if (autoMode) {
-    if (soilValue <= MOTOR_ON_ADC) {
+    if (soilValue <= motorOnADC) {
       // ดินแห้ง - เปิดปั๊ม
       digitalWrite(RELAY_PIN, LOW);
       pumpState = true;
@@ -185,6 +230,8 @@ void setup() {
   server.on("/api/pump", HTTP_OPTIONS, handleCORS);
   server.on("/api/auto", HTTP_POST, handleAutoAPI);
   server.on("/api/auto", HTTP_OPTIONS, handleCORS);
+  server.on("/api/thresholds", HTTP_POST, handleThresholdsAPI);
+  server.on("/api/thresholds", HTTP_OPTIONS, handleCORS);
   server.begin();
   
   // แสดงข้อมูล Server

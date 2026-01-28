@@ -52,6 +52,40 @@ export function SettingsPanel({ settings, onUpdate, onClose }: SettingsPanelProp
 
         <div className={styles.content}>
           <div className={styles.section}>
+            <h3>ค่าเกณฑ์ความชื้น</h3>
+            
+            <div className={styles.field}>
+              <label>ค่าดินแห้ง (เปิดปั๊ม)</label>
+              <div className={styles.rangeWrapper}>
+                <input
+                  type="range"
+                  min="0"
+                  max="4095"
+                  value={localSettings.thresholdDry}
+                  onChange={e => setLocalSettings(prev => ({ ...prev, thresholdDry: Number(e.target.value) }))}
+                />
+                <span className={styles.rangeValue}>{localSettings.thresholdDry}</span>
+              </div>
+              <span className={styles.hint}>เมื่อค่าต่ำกว่านี้จะเปิดปั๊มน้ำ</span>
+            </div>
+
+            <div className={styles.field}>
+              <label>ค่าดินชื้น</label>
+              <div className={styles.rangeWrapper}>
+                <input
+                  type="range"
+                  min="0"
+                  max="4095"
+                  value={localSettings.thresholdWet}
+                  onChange={e => setLocalSettings(prev => ({ ...prev, thresholdWet: Number(e.target.value) }))}
+                />
+                <span className={styles.rangeValue}>{localSettings.thresholdWet}</span>
+              </div>
+              <span className={styles.hint}>ค่าที่ถือว่าดินชื้นเพียงพอ</span>
+            </div>
+          </div>
+
+          <div className={styles.section}>
             <h3>โหมดการทำงาน</h3>
             
             <div className={styles.field}>
@@ -149,36 +183,6 @@ export function SettingsPanel({ settings, onUpdate, onClose }: SettingsPanelProp
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
-            </div>
-            
-            <div className={styles.field}>
-              <label>ค่าดินแห้ง (เปิดปั๊ม)</label>
-              <div className={styles.rangeWrapper}>
-                <input
-                  type="range"
-                  min="0"
-                  max="4095"
-                  value={localSettings.thresholdDry}
-                  onChange={e => setLocalSettings(prev => ({ ...prev, thresholdDry: Number(e.target.value) }))}
-                />
-                <span className={styles.rangeValue}>{localSettings.thresholdDry}</span>
-              </div>
-              <span className={styles.hint}>เมื่อค่าต่ำกว่านี้จะเปิดปั๊มน้ำ</span>
-            </div>
-
-            <div className={styles.field}>
-              <label>ค่าดินชื้น</label>
-              <div className={styles.rangeWrapper}>
-                <input
-                  type="range"
-                  min="0"
-                  max="4095"
-                  value={localSettings.thresholdWet}
-                  onChange={e => setLocalSettings(prev => ({ ...prev, thresholdWet: Number(e.target.value) }))}
-                />
-                <span className={styles.rangeValue}>{localSettings.thresholdWet}</span>
-              </div>
-              <span className={styles.hint}>ค่าที่ถือว่าดินชื้นเพียงพอ</span>
             </div>
           </div>
         </div>

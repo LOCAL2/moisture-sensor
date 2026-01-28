@@ -14,17 +14,27 @@ export function ControlPanel({ pumpState, autoMode, onPumpToggle, onAutoToggle, 
   const [loading, setLoading] = useState<'pump' | 'auto' | null>(null);
 
   const handlePumpToggle = async () => {
-    if (autoMode || disabled) return;
+    if (autoMode || disabled || loading) return;
+    
     setLoading('pump');
-    await onPumpToggle(!pumpState);
-    setLoading(null);
+    try {
+      await onPumpToggle(!pumpState);
+    } finally {
+      // Clear loading state after a short delay to prevent rapid clicking
+      setTimeout(() => setLoading(null), 300);
+    }
   };
 
   const handleAutoToggle = async () => {
-    if (disabled) return;
+    if (disabled || loading) return;
+    
     setLoading('auto');
-    await onAutoToggle(!autoMode);
-    setLoading(null);
+    try {
+      await onAutoToggle(!autoMode);
+    } finally {
+      // Clear loading state after a short delay to prevent rapid clicking
+      setTimeout(() => setLoading(null), 300);
+    }
   };
 
   return (
@@ -40,11 +50,12 @@ export function ControlPanel({ pumpState, autoMode, onPumpToggle, onAutoToggle, 
           </div>
         </div>
         <button
-          className={`${styles.toggle} ${autoMode ? styles.active : ''}`}
+          className={`${styles.toggle} ${autoMode ? styles.active : ''} ${loading === 'auto' ? styles.loading : ''}`}
           onClick={handleAutoToggle}
           disabled={disabled || loading === 'auto'}
         >
           <span className={styles.toggleKnob} />
+          {loading === 'auto' && <span className={styles.spinner} />}
         </button>
       </div>
 
@@ -61,11 +72,12 @@ export function ControlPanel({ pumpState, autoMode, onPumpToggle, onAutoToggle, 
           </div>
         </div>
         <button
-          className={`${styles.toggle} ${pumpState ? styles.active : ''} ${autoMode ? styles.disabled : ''}`}
+          className={`${styles.toggle} ${pumpState ? styles.active : ''} ${autoMode ? styles.disabled : ''} ${loading === 'pump' ? styles.loading : ''}`}
           onClick={handlePumpToggle}
           disabled={disabled || autoMode || loading === 'pump'}
         >
           <span className={styles.toggleKnob} />
+          {loading === 'pump' && <span className={styles.spinner} />}
         </button>
       </div>
     </div>

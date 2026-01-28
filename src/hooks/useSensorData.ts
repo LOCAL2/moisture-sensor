@@ -121,6 +121,17 @@ export function useSensorData() {
 
       if (data.pumpState !== undefined) setPumpState(data.pumpState);
       if (data.autoMode !== undefined) setAutoMode(data.autoMode);
+      
+      // อัพเดท threshold ถ้า Arduino ส่งมา
+      if (data.thresholdDry !== undefined || data.thresholdWet !== undefined) {
+        setSettings(prev => {
+          const updated = { ...prev };
+          if (data.thresholdDry !== undefined) updated.thresholdDry = data.thresholdDry;
+          if (data.thresholdWet !== undefined) updated.thresholdWet = data.thresholdWet;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+          return updated;
+        });
+      }
 
       setIsConnected(true);
       setError(null);
@@ -146,6 +157,28 @@ export function useSensorData() {
     tick();
     intervalRef.current = window.setInterval(tick, settings.updateInterval);
 
+    // ส่งค่า threshold ไป Arduino เมื่อเริ่มต้น (ถ้าไม่ใช่ demo mode)
+    if (!settings.demoMode && settings.apiUrl) {
+      const sendInitialThresholds = async () => {
+        try {
+          const baseUrl = settings.apiUrl.replace('/api/sensor', '').replace('/api/value', '');
+          await fetch(`${baseUrl}/api/thresholds`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              thresholdDry: settings.thresholdDry,
+              thresholdWet: settings.thresholdWet
+            }),
+          });
+        } catch (err) {
+          console.log('Could not send initial thresholds:', err);
+        }
+      };
+      
+      // ส่งหลังจาก delay เล็กน้อยเพื่อให้ Arduino พร้อม
+      setTimeout(sendInitialThresholds, 1000);
+    }
+
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -158,6 +191,34 @@ export function useSensorData() {
     setSettings((prev) => {
       const updated = { ...prev, ...newSettings };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      
+      // ส่งค่า threshold ไป Arduino ถ้าไม่ใช่ demo mode
+      if (!updated.demoMode && (newSettings.thresholdDry !== undefined || newSettings.thresholdWet !== undefined)) {
+        const sendThresholds = async () => {
+          try {
+            const baseUrl = updated.apiUrl.replace('/api/sensor', '').replace('/api/value', '');
+            const response = await fetch(`${baseUrl}/api/thresholds`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                thresholdDry: updated.thresholdDry,
+                thresholdWet: updated.thresholdWet
+              }),
+            });
+            
+            if (response.ok) {
+              console.log('Thresholds updated successfully');
+            } else {
+              console.error('Failed to update thresholds');
+            }
+          } catch (err) {
+            console.error('Error updating thresholds:', err);
+          }
+        };
+        
+        sendThresholds();
+      }
+      
       return updated;
     });
   }, []);
@@ -167,46 +228,71 @@ export function useSensorData() {
   }, []);
 
   const togglePump = useCallback(async (state: boolean) => {
+    // Update state immediately for better UX
+    if (!autoModeRef.current) {
+      setPumpState(state);
+    }
+
     if (settingsRef.current.demoMode) {
-      if (!autoModeRef.current) {
-        setPumpState(state);
-      }
       return;
     }
 
     try {
       const baseUrl = getBaseUrl();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
       const response = await fetch(`${baseUrl}/api/pump`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ state }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         const data = await response.json();
         setPumpState(data.pumpState);
+      } else {
+        // Revert state if API call failed
+        if (!autoModeRef.current) {
+          setPumpState(!state);
+        }
       }
     } catch (err) {
       console.error('Failed to toggle pump:', err);
+      // Revert state if API call failed
+      if (!autoModeRef.current) {
+        setPumpState(!state);
+      }
     }
   }, [getBaseUrl]);
 
   const toggleAuto = useCallback(async (state: boolean) => {
+    // Update state immediately for better UX
+    setAutoMode(state);
+    if (!state) {
+      setPumpState(false);
+    }
+
     if (settingsRef.current.demoMode) {
-      setAutoMode(state);
-      if (!state) {
-        setPumpState(false);
-      }
       return;
     }
 
     try {
       const baseUrl = getBaseUrl();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
       const response = await fetch(`${baseUrl}/api/auto`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ state }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         const data = await response.json();
@@ -214,9 +300,20 @@ export function useSensorData() {
         if (!data.autoMode) {
           setPumpState(false);
         }
+      } else {
+        // Revert state if API call failed
+        setAutoMode(!state);
+        if (state) {
+          setPumpState(false);
+        }
       }
     } catch (err) {
       console.error('Failed to toggle auto mode:', err);
+      // Revert state if API call failed
+      setAutoMode(!state);
+      if (state) {
+        setPumpState(false);
+      }
     }
   }, [getBaseUrl]);
 
