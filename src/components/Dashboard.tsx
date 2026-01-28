@@ -63,7 +63,7 @@ export function Dashboard() {
         <div className={styles.statsGrid}>
           <StatusCard
             title="ค่าความชื้น"
-            value={sensorData?.value?.toString() ?? '-'}
+            value={sensorData?.value?.toString() ?? '0'}
             unit="ADC"
             icon={<DropletIcon size={24} />}
             color="#5b9bd5"

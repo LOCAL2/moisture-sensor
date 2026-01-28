@@ -125,7 +125,7 @@ export function GaugeDisplay({ value, percentage, statusLabel, statusColor }: Ga
           {percentage}%
         </div>
         <div className={styles.value}>
-          {value.toLocaleString()} <span>ADC</span>
+          {(value || 0).toLocaleString()} <span>ADC</span>
         </div>
         <div className={styles.status} style={{ backgroundColor: `${statusColor}20`, color: statusColor }}>
           {statusLabel}
