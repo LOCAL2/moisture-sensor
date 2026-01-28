@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edge Compatibility Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .test-item {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .pass { background: #d4edda; border-color: #c3e6cb; }
+        .fail { background: #f8d7da; border-color: #f5c6cb; }
+    </style>
+</head>
+<body>
+    <h1>Microsoft Edge Compatibility Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        function addResult(test, passed, details = '') {
+            const div = document.createElement('div');
+            div.className = `test-item ${passed ? 'pass' : 'fail'}`;
+            div.innerHTML = `
+                <strong>${test}:</strong> ${passed ? 'PASS' : 'FAIL'}
+                ${details ? `<br><small>${details}</small>` : ''}
+            `;
+            results.appendChild(div);
+        }
+        
+        // Test modern JavaScript features
+        try {
+            // Test optional chaining
+            const obj = {};
+            const test1 = obj?.prop?.nested;
+            addResult('Optional Chaining (?.)', true);
+        } catch (e) {
+            addResult('Optional Chaining (?.)', false, e.message);
+        }
+        
+        try {
+            // Test nullish coalescing
+            const test2 = null ?? 'default';
+            addResult('Nullish Coalescing (??)', true);
+        } catch (e) {
+            addResult('Nullish Coalescing (??)', false, e.message);
+        }
+        
+        try {
+            // Test Array.at()
+            const arr = [1, 2, 3];
+            const test3 = arr.at ? arr.at(-1) : 'not supported';
+            addResult('Array.at()', !!arr.at, test3);
+        } catch (e) {
+            addResult('Array.at()', false, e.message);
+        }
+        
+        try {
+            // Test CSS gap support
+            const testEl = document.createElement('div');
+            testEl.style.display = 'flex';
+            testEl.style.gap = '10px';
+            const hasGap = testEl.style.gap === '10px';
+            addResult('CSS Gap Property', hasGap);
+        } catch (e) {
+            addResult('CSS Gap Property', false, e.message);
+        }
+        
+        try {
+            // Test fetch API
+            const hasFetch = typeof fetch !== 'undefined';
+            addResult('Fetch API', hasFetch);
+        } catch (e) {
+            addResult('Fetch API', false, e.message);
+        }
+        
+        try {
+            // Test localStorage
+            localStorage.setItem('test', 'value');
+            const hasLocalStorage = localStorage.getItem('test') === 'value';
+            localStorage.removeItem('test');
+            addResult('LocalStorage', hasLocalStorage);
+        } catch (e) {
+            addResult('LocalStorage', false, e.message);
+        }
+        
+        // Test React 19 features
+        addResult('Browser Info', true, `${navigator.userAgent}`);
+        addResult('Edge Version', navigator.userAgent.includes('Edg/'), navigator.userAgent.match(/Edg\/(\d+)/)?.[1] || 'Not Edge');
+    </script>
+</body>
+</html>
